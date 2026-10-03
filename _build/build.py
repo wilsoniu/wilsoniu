@@ -56,7 +56,7 @@ KEYCAP = {"Photoshop": "Ps", "Illustrator": "Ai", "After Effects": "Ae", "Premie
 OPTICAL = {"Figma": 1.08, "OpenAI": 1.08, "Firebase": 1.08, "Manus": 1.08, "Grok": 1.06, "Unreal Engine": 1.06,
            "Linear": 0.88, "VS Code": 0.9, "Xcode": 0.92}
 
-INK, SUB, DIM, RULE, BG, ACC = "#EDEEF0", "#80838B", "#4A4D55", "#1E2026", "#07080A", "#FF5A1F"
+INK, SUB, DIM, RULE, BG, ACC = "#EDEEF0", "#80838B", "#5A5E67", "#1E2026", "#07080A", "#FF5A1F"
 EASE_OUT = "cubic-bezier(.16,1,.3,1)"
 SPIN = 18  # seconds per revolution
 
@@ -279,12 +279,12 @@ def card() -> str:
         0.34))
 
     _, mh, mark = CYTE_MARK
-    chip_w = 46 + max(width("sans_md", "CYTE LAB", 13, 0.04), width("mono", "CREATIVE TECH STUDIO", 7, 0.14)) + 16
+    chip_w = 46 + max(width("sans_md", "CYTE LAB", 13, 0.04), width("mono", "CREATIVE TECH STUDIO", 7.5, 0.14)) + 16
     b.append(enter(
         f'<rect class="chip" x="{X0 + 0.5}" y="214.5" width="{num(chip_w)}" height="42" rx="10"/>'
         f'<path fill="{INK}" transform="translate({X0 + 12} 224.5) scale({22 / mh:.4f})" d="{mark}"/>'
         + text("sans_md", "CYTE LAB", 13, X0 + 46, 234, "ink", 0.04)
-        + text("mono", "CREATIVE TECH STUDIO", 7, X0 + 46, 247, "sub", 0.14),
+        + text("mono", "CREATIVE TECH STUDIO", 7.5, X0 + 46, 247, "sub", 0.14),
         0.42))
 
     px = X0 + 12
@@ -304,8 +304,8 @@ def card() -> str:
     )
     b.append(enter(
         f'<path class="bracket" d="{corners}"/>'
-        + label("FIG.01 — ORBIT", px0 + 14, py0 + 14, "dim", size=7)
-        + label(f"REV {SPIN}S", px1 - 14, py1 - 8, "dim", "end", size=7),
+        + label("FIG.01 — ORBIT", px0 + 14, py0 + 14, "dim", size=7.5)
+        + label(f"REV {SPIN}S", px1 - 14, py1 - 8, "dim", "end", size=7.5),
         0.3))
     gx, gy, gr = 550, 168, 72
     orbits = [(122, 27, -12, 7.5, ACC, "halo-acc"), (100, 34, 24, 11.5, INK, "halo-ink")]
@@ -323,8 +323,8 @@ def card() -> str:
     gap = (X1 - X0 - n * size - (len(STACK) - 1) * group_gap) / (n - len(STACK))
     x, k, logos = X0, 0, []
     for group, tools in STACK:
-        b.append(enter(label(group, x, 324, "dim", size=7), 0.5))
-        build_label_end = x + width("mono", group, 7, 0.14)
+        b.append(enter(label(group, x, 324, "dim", size=7.5), 0.5))
+        build_label_end = x + width("mono", group, 7.5, 0.14)
         for name, src in tools:
             if name in KEYCAP:
                 mark = (f'<g transform="translate({num(x)} 335)"><rect x="1" y="1" width="15" height="15" rx="3.5" '
@@ -341,8 +341,8 @@ def card() -> str:
         x += group_gap - gap
     # Tools with no public vector mark get named instead.
     also = "+ CANVA / FCP / MOTION / SPLINE"
-    assert X1 - width("mono", also, 7, 0.14) > build_label_end + 12, "stack note collides with the BUILD label"
-    b.append(enter(label(also, X1, 324, "dim", "end", size=7), 0.5))
+    assert X1 - width("mono", also, 7.5, 0.14) > build_label_end + 12, "stack note collides with the BUILD label"
+    b.append(enter(label(also, X1, 324, "dim", "end", size=7.5), 0.5))
     b.append(f'<g fill="{SUB}" color="{SUB}"><g id="logos">{"".join(logos)}</g></g>')
     b.append(f'<g fill="#fff" color="#fff" mask="url(#sheen)" display="none">{sweep_window(1.6)}<use href="#logos"/></g>')
 
