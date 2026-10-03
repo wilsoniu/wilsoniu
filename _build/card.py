@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lib  # noqa: E402
-from lib import cyte, mark, num, text, width  # noqa: E402
+from lib import mark, num, text, width  # noqa: E402
 
 BG, INK, SUB, DIM, RULE = "#000000", "#F5F5F5", "#8E9199", "#55575E", "#232328"
 W = 960
@@ -125,8 +125,8 @@ def card() -> str:
     lead = "Experience designer at "
     b.append(text("sans", lead, 18, P, 190, "sub", -0.01))
     lx = P + width("sans", lead, 18, -0.01)
-    b.append(cyte(lx + 1, 176, 15))
-    b.append(text("sans_md", "CYTE LAB", 18, lx + 21, 190, "ink", 0.01))
+    # the studio's wordmark at cap height, on the same baseline as the sentence
+    b.append(lib.cyte_wordmark(lx + 1, 190, 18 * 0.71))
     tag = "Minimal systems, cinematic details, "
     b.append(text("sans", tag, 18, P, 220, "sub", -0.01))
     b.append(text("italic", "timeless taste.", 23, P + width("sans", tag, 18, -0.01), 220, "ink"))
