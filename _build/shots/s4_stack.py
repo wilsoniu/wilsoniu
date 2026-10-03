@@ -1,17 +1,14 @@
 """SHOT 04 — THE STACK (5.5–8.0).
 
 Beat map (reel seconds, 16th note = 0.125s):
-  5.500  hard cut: camera dollies in; "THE STACK" types on; "00" rises into its slot
+  5.500  hard cut: camera dollies in; "00" rises into its slot
   5.56   "instruments" rises letter by letter out of a clip line
-  5.625  column hits on 16ths (DESIGN, MOTION, 3D, AI, BUILD): an accent streak drops down the
-         column, the hairline draws, every tool pops in behind the streak (BACK, 22ms stagger),
-         and one slab letter of a ghost "S-T-A-C-K" cuts in behind the grid;
-         the counter ticks once per tool that lands, 00 -> 27, and flashes accent on 27
+  5.625  column hits on 16ths (DESIGN, MOTION, 3D, AI, BUILD): the hairline draws and every tool
+         pops in (BACK, 22ms stagger); the counter ticks once per tool, 00 -> 27, flashing accent on 27
   6.40   full grid holds, legible; columns drift in alternating parallax, slow push-in
-  6.5    a skewed light band sweeps left -> right (one column per 0.2s): each column it crosses flashes its count and
-         hairline accent, and its tools ripple in a diagonal wave
+  6.5    tools ripple in a diagonal wave, column by column
   7.70   implosion: tools collapse toward the centre in reverse order, counter counts back to 00,
-         hairlines retract, ghost letters cut out K-C-A-T-S on 16ths, header exits — hard cut at 8.0
+         hairlines retract, header exits — hard cut at 8.0
 """
 
 import lib
@@ -48,13 +45,12 @@ GUT = 16
 COLW = (X1 - X0 - 4 * GUT) / 5
 PITCH_X = COLW + GUT
 Y_HEAD = 212          # group label baseline
-Y_RULE = 222.5        # hairline
-Y_ITEM = 238          # first mark top
+Y_RULE = 228.5        # hairline (16px under the labels)
+Y_ITEM = 244          # first mark top (16px under the hairline)
 PITCH_Y = 32
 MK = 16
 
 Y_TITLE = 162         # counter / "instruments" baseline
-Y_LABEL = 98
 CNT_P = 72            # counter strip pitch
 
 HIT = [T0 + 0.125 + 0.125 * k for k in range(5)]          # column hits, on 16ths
@@ -98,35 +94,16 @@ def column_head(k: int, group: str, count: int) -> str:
     x, h, b = col_x(k), HIT[k], BAND[k]
     out = []
     # group label slides in from the left
-    lab = label(group, x, Y_HEAD, "sub")
+    lab = label(group, x, Y_HEAD, "sub", size=11.5)
     out.append(anim(lab, [(0, hid("translateX(-12px)")), (h, hid("translateX(-12px)"), EXPO), (h + 0.3, vis()),
                           (7.80 + (4 - k) * 0.02, vis(), EASE_IN), (7.95 + (4 - k) * 0.01, hid("translateY(-10px)")),
                           (T, hid("translateY(-10px)"))]))
-    # count, cut in a 32nd later; flashes accent as the band passes
-    cnt = f"{count:02d}"
-    out.append(anim(label(cnt, x + COLW, Y_HEAD, "dim", "end"),
-                    [(0, hid()), (h + 0.06, hid()), (h + 0.065, vis()), (7.82, vis()), (7.825, hid()), (T, hid())]))
-    out.append(anim(label(cnt, x + COLW, Y_HEAD, "acc", "end"),
-                    [(0, hid()), (b - 0.02, hid()), (b - 0.015, vis()), (b + 0.2, vis()), (b + 0.205, hid()), (T, hid())]))
     # hairline draws in, retracts on exit
     ln = f'<path d="M{num(x)} {Y_RULE}H{num(x + COLW)}" stroke="{DIM}" stroke-opacity=".6" fill="none"/>'
     o = f"{num(x)}px {Y_RULE}px"
     out.append(anim(ln, [(0, hid("scaleX(0)")), (h, hid("scaleX(0)"), EXPO), (h + 0.45, vis()),
                          (7.72 + (4 - k) * 0.025, vis(), EASE_IN), (7.9 + (4 - k) * 0.02, vis("scaleX(0)")),
                          (7.9 + (4 - k) * 0.02 + 0.005, hid("scaleX(0)")), (T, hid("scaleX(0)"))], o))
-    # accent wipe along the hairline when the band crosses
-    acc = f'<path d="M{num(x)} {Y_RULE}H{num(x + COLW)}" stroke="{ACC}" stroke-width="1.5" fill="none"/>'
-    out.append(anim(acc, [(0, hid("scaleX(0)")), (b - 0.08, hid("scaleX(0)"), EXPO), (b + 0.14, vis()),
-                          (b + 0.22, vis(), SINE), (b + 0.5, vis(op=0)), (b + 0.505, hid()), (T, hid())], o))
-    # accent streak drops down the column just ahead of the tools
-    y0, y1 = Y_RULE - 26, Y_ITEM + len(lib.STACK[k][1]) * PITCH_Y + 6
-    L, dash = y1 - y0, 56
-    sx = x - 8
-    streak = (f'<path d="M{num(sx)} {num(y0)}V{num(y1)}" stroke="{ACC}" stroke-width="1.5" fill="none" '
-              f'stroke-dasharray="{dash} {num(L + dash + 40)}"/>')
-    dur = (L + dash) / (PITCH_Y / 0.022)
-    out.append(anim(streak, [(0, hid() + f";stroke-dashoffset:{dash}px"), (h, vis() + f";stroke-dashoffset:{dash}px"),
-                             (h + dur, vis() + f";stroke-dashoffset:{num(-L)}px"), (h + dur + 0.005, hid()), (T, hid())]))
     return "".join(out)
 
 
@@ -173,51 +150,6 @@ def title_word(x: float) -> str:
     return f'<g clip-path="url(#{K}-word)">{"".join(out)}</g>'
 
 
-def slate() -> str:
-    """Accent block + 'THE STACK' typed on, deleted on the way out."""
-    out = [anim(f'<rect x="{X0}" y="{Y_LABEL - 7}" width="7" height="7" fill="{ACC}"/>',
-                [(0, hid()), (T0, hid()), (CUT_IN, vis()), (7.975, vis()), (7.98, hid()), (T, hid())])]
-    s = "THE STACK"
-    for i, (lx, adv, ch) in enumerate(letters("mono", s, 9.5, X0 + 15, Y_LABEL, 0.16)):
-        if ch == " ":
-            continue
-        tin = T0 + 0.02 + i * 0.022
-        tout = 7.80 + (len(s) - 1 - i) * 0.018
-        out.append(anim(text("mono", ch, 9.5, lx, Y_LABEL, "ink", 0.16),
-                        [(0, hid()), (tin, hid()), (tin + 0.004, vis()), (tout, vis()), (tout + 0.004, hid()), (T, hid())]))
-    return "".join(out)
-
-
-def band() -> str:
-    """A skewed full-height glint crossing column k at BAND[k]; it also catches the ghost letters."""
-    lib.add_def(f'<linearGradient id="{K}-band" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/>'
-                f'<stop offset=".5" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>')
-    skew = 0.21   # tan(12deg)
-    rect = (f'<rect x="-80" y="0" width="160" height="{lib.H}" fill="url(#{K}-band)" '
-            f'transform="matrix(1 0 {-skew} 1 {num(skew * 360)} 0)"/>')
-    speed = PITCH_X / 0.2
-    c0 = col_x(0) + 70
-
-    def tx(t: float) -> str:
-        return f"translateX({num(c0 + (t - BAND[0]) * speed)}px)"
-    ta, tb = 6.22, 7.52
-    return anim(rect, [(0, hid(tx(ta))), (ta, hid(tx(ta))), (ta + 0.12, vis(tx(ta + 0.12))), (tb - 0.12, vis(tx(tb - 0.12))),
-                       (tb, hid(tx(tb))), (T, hid(tx(tb)))])
-
-
-def ghost() -> str:
-    """Slab letters S-T-A-C-K behind the grid: one cuts in on each column hit, out in reverse on the exit."""
-    size, base = 270, 522
-    out = []
-    for k, (lx, adv, ch) in enumerate(letters("sans_bk", "STACK", size, 480, base, -0.02, "middle")):
-        g = text("sans_bk", ch, size, lx, base, "")
-        tin, tout = HIT[k], 7.70 + (4 - k) * 0.0625
-        o = f"{num(lx + adv / 2)}px {base - 96}px"
-        out.append(anim(g, [(0, hid("scale(1.12)")), (tin, hid("scale(1.12)")), (tin + 0.005, vis("scale(1.12)"), EXPO),
-                            (tin + 0.35, vis()), (tout, vis()), (tout + 0.005, hid()), (T, hid())], o))
-    return window(f'<g fill="{RULE}" fill-opacity=".6">{"".join(out)}</g>', "translateX(70px)", "translateX(-90px)")
-
-
 # ---------------------------------------------------------------- shot
 
 def build() -> str:
@@ -235,5 +167,5 @@ def build() -> str:
     grid = anim("".join(columns), cam, "480px 360px")
 
     cnt, cw = counter(lands, exits)
-    header = window(slate() + cnt + title_word(X0 + cw + 16), "translateX(9px)", "translateX(0)")
-    return ghost() + band() + grid + header
+    header = window(cnt + title_word(X0 + cw + 16), "translateX(9px)", "translateX(0)")
+    return grid + header

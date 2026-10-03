@@ -23,7 +23,8 @@ CACHE = ROOT / "_build" / ".cache"
 W, H = 960, 600
 X0, X1 = 64, 896          # left/right text margins
 SAFE_TOP, SAFE_BOTTOM = 64, 528  # keep shot content between these (HUD lives outside)
-INK, SUB, DIM, RULE, BG, ACC = "#EDEEF0", "#80838B", "#5A5E67", "#1E2026", "#07080A", "#FF5A1F"
+# Pure black, white and satin metal. ACC is kept as a name for emphasis but is white.
+INK, SUB, DIM, RULE, BG, ACC = "#F5F5F5", "#8E9199", "#55575E", "#232328", "#000000", "#F5F5F5"
 
 T = 12.0     # loop length, seconds
 BEAT = 0.5   # 120 BPM; cut on beats
