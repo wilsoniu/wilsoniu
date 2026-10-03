@@ -38,7 +38,8 @@ def anim(body: str, stops: list[tuple], delay: float = 0.0, origin: str = "") ->
     pre-start flash on load). Children of a cut() wrapper only, since the shift moves every stop."""
     style = timeline(stops)
     if delay:
-        style += f";animation-delay:{delay - T:.3f}s"
+        # negative delay of nearly one *published* loop (lib.T_OUT), so the shift is exactly `delay`
+        style += f";animation-delay:{delay - lib.T_OUT:.3f}s"
     if origin:
         style += f";transform-origin:{origin}"
     return f'<g style="{style}">{body}</g>'
