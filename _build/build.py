@@ -25,7 +25,7 @@ from lib import ACC, BG, DIM, INK, SUB, H, W  # noqa: E402
 SHOT_MODULES = [("s1", "s1_name"), ("s2", "s2_role"), ("s3", "s3_tagline"), ("s4", "s4_dial"), ("s5", "s5_now"),
                 ("s7", "s7_code"), ("s6", "s6_studio")]
 # Shots were composed on a 960 x 600 canvas; these recentre them in the 21:9 band (px down).
-OFFSETS = {"s1": 18, "s5": 26, "s6": 24}
+OFFSETS = {"s1": 18, "s5": 26, "s6": 40}
 # Shots are authored on a 12 s clock; these move them onto the 13.5 s published loop.
 WARPS = {
     "s1": lambda t: t + 1.5 if t >= 6 else t,   # the pre-wrap build moves with the loop end

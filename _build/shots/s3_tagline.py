@@ -4,8 +4,7 @@
                                        hairline shoots out under it, an ACC square riding its head,
                                        and lands on the 4.0 downbeat.
   B  4.17-4.83  "cinematic details,"   fast wireframe valley flyover kept entirely below the phrase,
-                                       which punches in, word by word, up in the sky; anamorphic
-                                       bars slam in to 2.39:1.
+                                       which punches in, word by word, up in the sky.
   C  4.83-5.50  "timeless taste."      serif italic tracks in toward the centre on a fast push; a
                                        type stands alone, pushing in.
 
@@ -23,7 +22,6 @@ A1 = B0 = 3.5 + 2 / 3
 B1 = C0 = 3.5 + 4 / 3
 C1 = 5.5
 
-BAR = round((H - W / 2.39) / 2)     # 99: letterbox bar height for 2.39:1
 HIDE = "opacity:0;visibility:hidden"
 SHOW = "opacity:1;visibility:visible"
 LAND = "cubic-bezier(.5,0,.1,1)"    # accelerate hard, brake onto the beat
@@ -97,15 +95,6 @@ def shot_b() -> str:
     lib.add_def(f'<clipPath id="{K}-ground"><rect x="0" y="247" width="{W}" height="{H - 247}"/></clipPath>')
     land = f'<g clip-path="url(#{K}-ground)">{land}</g>'
 
-    # anamorphic bars slam in from the frame edges, each with a hairline on its inner edge
-    edge = f'stroke="{INK}" stroke-opacity=".22" stroke-width="1" fill="none"'
-
-    def slam(dy: int) -> list[tuple]:
-        return [(0, f"transform:translateY({dy}px)"), (B0 - 0.03, f"transform:translateY({dy}px)", EXPO), (B0 + 0.24, "transform:none"), (T, "transform:none")]
-
-    top = anim(f'<rect x="0" y="0" width="{W}" height="{BAR}" fill="{BG}"/><path d="M0 {BAR - 0.5}H{W}" {edge}/>', slam(-BAR))
-    bot = anim(f'<rect x="0" y="{H - BAR}" width="{W}" height="{BAR}" fill="{BG}"/><path d="M0 {H - BAR + 0.5}H{W}" {edge}/>', slam(BAR))
-
     # the words punch in on a triplet: cut on at 1.14, settle with EXPO
     w1, w2 = "cinematic", "details,"
     sp = width("sans_sb", " ", size)
@@ -121,7 +110,7 @@ def shot_b() -> str:
                            (t + 0.005, "opacity:1;transform:scale(1.14)", EXPO), (t + 0.3, "opacity:1;transform:none"), (T, "opacity:1;transform:none")],
                           origin=o))
     words = drift("".join(words), B0, B1, "transform:scale(1)", "transform:scale(1.05)", origin=f"480px {base - 26}px")
-    return land + words + top + bot
+    return land + words
 
 
 # ---------------------------------------------------------------- C: timeless taste.

@@ -15,7 +15,7 @@ band, so no line ever reaches the type.
 
 
 import lib
-from lib import BG, EASE_IN, EXPO, BACK, INK, SINE, T, W, H, at, cyte, num, off, text
+from lib import BG, EASE_IN, EXPO, BACK, INK, SINE, T, W, H, at, num, off, text
 
 K = "s6"
 T0, T1 = lib.SHOTS[K]          # 9.5, 11.3
@@ -46,9 +46,7 @@ def _tf(css: str) -> str:
 
 # ---------------------------------------------------------------- lockup geometry
 
-MARK_H = 76
-MARK_TOP = 92
-NAME_Y = 240                   # "CYTE LAB" baseline (cap top ~200)
+NAME_Y = 240                   # wordmark baseline
 LABEL_Y = 272                  # "CREATIVE TECH STUDIO" baseline
 FOC_Y = 303                    # focus line baseline; lowest glyph ~307, 45+ px above any ridge
 HITS = (10.0, 10.25, 10.5)
@@ -89,26 +87,17 @@ def world() -> str:
 
 # ---------------------------------------------------------------- lockup
 
-def the_mark() -> str:
-    mw = 189 / 204 * MARK_H
-    body = cyte(CX - mw / 2, MARK_TOP, MARK_H, INK)
-    o = f"{CX}px {MARK_TOP + MARK_H / 2}px"
-    return kf([(9.6, shown("transform:scale(1.8)"), BACK), (9.92, shown("transform:none")), (T1 - E, shown("transform:none"))], o, body)
+WORD_H = 84    # wordmark height; its baseline sits on NAME_Y
 
 
 def wordmark() -> str:
-    size = 56
-    lib.add_def(f'<clipPath id="{K}-slot"><rect x="40" y="{NAME_Y - 52}" width="{W - 80}" height="64"/></clipPath>')
-    out = []
-    i = 0
-    for x, adv, ch in lib.letters("sans_bk", "CYTE LAB", size, CX, NAME_Y, 0.01, "middle"):
-        if ch == " ":
-            continue
-        tin = 9.75 + i * 0.03
-        out.append(kf([(tin, shown("transform:translateY(62px)"), EXPO), (tin + .38, shown("transform:none")),
-                       (T1 - E, shown("transform:none"))], body=text("sans_bk", ch, size, x, NAME_Y, "name")))
-        i += 1
-    return f'<g clip-path="url(#{K}-slot)">{"".join(out)}</g>'
+    """The studio's horizontal CYTE wordmark in satin metal, slammed in on the first hit."""
+    lib.add_def(f'<linearGradient id="{K}-satin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FCFCFD"/>'
+                '<stop offset=".45" stop-color="#E2E4E8"/><stop offset=".7" stop-color="#BDC1C8"/><stop offset="1" stop-color="#8C9098"/></linearGradient>')
+    w = WORD_H * lib.CYTE_WORDMARK[0] / lib.CYTE_WORDMARK[1]
+    body = lib.cyte_wordmark(CX - w / 2, NAME_Y, WORD_H, f"url(#{K}-satin)")
+    o = f"{CX}px {NAME_Y - WORD_H / 2}px"
+    return kf([(9.6, shown("transform:scale(1.8)"), BACK), (9.92, shown("transform:none")), (T1 - E, shown("transform:none"))], o, body)
 
 
 def studio_label() -> str:
@@ -150,12 +139,12 @@ def focus_line() -> str:
 
 
 def build() -> str:
-    # mark + name: a slow drift toward camera through the hold, then they launch up and past the
+    # the wordmark: a slow drift toward camera through the hold, then they launch up and past the
     # camera (scaled about the name's baseline, so nothing ever moves down toward the terrain)
     hero = kf([(9.6, shown("transform:translateY(0px) scale(1)"), SINE),
                (11.0, shown("transform:translateY(0px) scale(1.025)"), EASE_IN),
                (T1 - E, shown("transform:translateY(-130px) scale(3.2)"))],
-              f"{CX}px {NAME_Y}px", the_mark() + wordmark())
+              f"{CX}px {NAME_Y}px", wordmark())
     body = world() + hero + studio_label() + focus_line()
     # master window: hard cuts on both edges
     return at(body, [(0, off()), (T0 - E, off()), (T0, shown()), (T1 - E, shown()), (T1, off()), (T, off())])
