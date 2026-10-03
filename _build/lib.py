@@ -26,10 +26,15 @@ SAFE_TOP, SAFE_BOTTOM = 64, 528  # keep shot content between these (HUD lives ou
 # Pure black, white and satin metal. ACC is kept as a name for emphasis but is white.
 INK, SUB, DIM, RULE, BG, ACC = "#F5F5F5", "#8E9199", "#55575E", "#232328", "#000000", "#F5F5F5"
 
-T = 12.0     # loop length, seconds
-BEAT = 0.5   # 120 BPM; cut on beats
-# Shot windows in reel seconds. s1 starts before the wrap so frame 0 shows the finished name.
-SHOTS = {"s1": (-0.7, 1.5), "s2": (1.5, 3.5), "s3": (3.5, 5.5), "s4": (5.5, 8.0), "s5": (8.0, 9.5), "s6": (9.5, 11.3)}
+T = 12.0      # the authoring clock: every shot is written against a 12 s loop
+T_OUT = 13.5  # the published loop; the composer maps each shot's times onto it (see WARP)
+BEAT = 0.5    # 120 BPM; cut on beats
+# Shot windows on the authoring clock. s1 starts before the wrap so frame 0 shows the finished name.
+SHOTS = {"s1": (-0.7, 1.5), "s2": (1.5, 3.5), "s3": (3.5, 5.5), "s4": (5.5, 7.5), "s5": (8.0, 9.5), "s7": (9.0, 11.0), "s6": (9.5, 11.3)}
+# The published frame is 21:9: this horizontal band of the 960 x 600 canvas.
+VIEW_Y, VIEW_H = 94, 412
+# Set by the composer while a shot builds: maps authoring seconds to published seconds.
+WARP = None
 
 EXPO = "cubic-bezier(.16,1,.3,1)"        # snappy entrance
 BACK = "cubic-bezier(.34,1.56,.64,1)"    # entrance with overshoot
@@ -225,6 +230,10 @@ def timeline(stops: list[tuple], duration: float = T) -> str:
     Put it in a style attribute on a <g> that has no transform attribute of its own (CSS
     transform replaces it). Stops must be in ascending time within [0, duration].
     """
+    if duration == T:   # the reel clock: place the shot on the published timeline
+        warp = WARP or (lambda t: t)
+        stops = [(0.0 if t <= 0 else T_OUT if t >= T else warp(t), *rest) for t, *rest in stops]
+        duration = T_OUT
     frames: dict[str, str] = {}   # a later stop at the same instant wins
     for t, css, *ease in stops:
         frames[num(t / duration * 100)] = css + (f";animation-timing-function:{ease[0]}" if ease else "")

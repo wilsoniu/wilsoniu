@@ -38,12 +38,25 @@ SATIN = ('<linearGradient id="satin" gradientUnits="userSpaceOnUse" x1="0" y1="7
          '<stop offset=".8" stop-color="#A4A8B0"/><stop offset="1" stop-color="#8C9098"/></linearGradient>')
 
 
+# The knob is turned by a hand that never stops: quick decisive moves with a small mechanical
+# overshoot, short rests between them, one full revolution per loop so the loop is seamless.
+_TURN = "cubic-bezier(.3,1.35,.45,1)"
+KNOB_CSS = (".knob-turn{animation:knob-turn 7s infinite}"
+            "@keyframes knob-turn{"
+            f"0%{{transform:rotate(0deg);animation-timing-function:{_TURN}}}"
+            f"9%,22%{{transform:rotate(128deg);animation-timing-function:{_TURN}}}"
+            f"30%,44%{{transform:rotate(46deg);animation-timing-function:{_TURN}}}"
+            f"55%,66%{{transform:rotate(232deg);animation-timing-function:{_TURN}}}"
+            f"74%,84%{{transform:rotate(196deg);animation-timing-function:{_TURN}}}"
+            "96%,100%{transform:rotate(360deg)}}")
+
+
 def document(w: int, h: int, title: str, defs: list[str], body: list[str]) -> str:
     glyphs = [f'<path id="{gid}" d="{d}"/>' for gid, d in lib.GLYPHS.values() if d]
     return "\n".join([
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="{title}">',
         f"<title>{title}</title>",
-        f"<style>.ink{{fill:{INK}}}.sub{{fill:{SUB}}}.dim{{fill:{DIM}}}.satin{{fill:url(#satin)}}</style>",
+        f"<style>.ink{{fill:{INK}}}.sub{{fill:{SUB}}}.dim{{fill:{DIM}}}.satin{{fill:url(#satin)}}{KNOB_CSS}</style>",
         f"<defs>{''.join(glyphs + defs)}</defs>",
         f'<clipPath id="frame"><rect width="{w}" height="{h}" rx="20"/></clipPath>',
         f'<g clip-path="url(#frame)"><rect width="{w}" height="{h}" fill="{BG}"/>',
@@ -93,16 +106,25 @@ def knob(cx: float, cy: float, r: float) -> tuple[str, list[str]]:
         '<stop offset="1" stop-color="#fff" stop-opacity=".55"/></linearGradient>',
     ]
     a = math.radians(-58)
+    knurl = '<path stroke="#000" stroke-opacity=".55" stroke-width="1.1" d="' + "".join(
+        f"M{num((r + 2) * math.cos(t))} {num((r + 2) * math.sin(t))}L{num((r + 6.5) * math.cos(t))} {num((r + 6.5) * math.sin(t))}"
+        for t in (math.radians(d) for d in range(0, 360, 6))) + '"/>'
+    # a fixed scale around the knob, so every turn reads
+    scale = '<path stroke="#fff" stroke-opacity=".28" stroke-width="1" d="' + "".join(
+        f"M{num((r + 13) * math.cos(t))} {num((r + 13) * math.sin(t))}L{num((r + (19 if k % 5 == 0 else 16)) * math.cos(t))} {num((r + (19 if k % 5 == 0 else 16)) * math.sin(t))}"
+        for k, t in ((k, math.radians(-90 + k * 7.5)) for k in range(48))) + '"/>'
     ind = f'M{num(r * .5 * math.cos(a))} {num(r * .5 * math.sin(a))}L{num(r * .8 * math.cos(a))} {num(r * .8 * math.sin(a))}'
     body = (
         f'<g transform="translate({cx} {cy})">'
-        f'<ellipse rx="{num(r * 1.22)}" ry="{num(r * 1.16)}" cy="10" fill="url(#knob-shadow)"/>'
+        f'<ellipse rx="{num(r * 1.22)}" ry="{num(r * 1.16)}" cy="10" fill="url(#knob-shadow)"/>{scale}'
         f'<circle r="{num(r + 7)}" fill="url(#knob-skirt)"/><circle r="{num(r + 6.5)}" fill="none" stroke="#fff" stroke-opacity=".12"/>'
         + "".join(wedges) + "".join(rings)
         + f'<circle r="{num(r - 0.8)}" fill="none" stroke="url(#knob-chamfer)" stroke-width="1.6"/>'
         f'<circle r="{num(r * .3)}" fill="url(#knob-dimple)"/><circle r="{num(r * .3)}" fill="none" stroke="url(#knob-dimple-edge)" stroke-width="1"/>'
-        f'<path d="{ind}" stroke="#fff" stroke-opacity=".55" stroke-width="3.4" stroke-linecap="round" transform="translate(.5 .8)"/>'
-        f'<path d="{ind}" stroke="#2B2C31" stroke-width="3.2" stroke-linecap="round"/>'
+        # what turns: the engraved groove and the knurled skirt. The light lip of the groove is
+        # offset in screen space (outside the rotation) so it always faces the fixed light.
+        f'<g transform="translate(.5 .8)"><g class="knob-turn"><path d="{ind}" stroke="#fff" stroke-opacity=".55" stroke-width="3.4" stroke-linecap="round"/></g></g>'
+        f'<g class="knob-turn"><path d="{ind}" stroke="#2B2C31" stroke-width="3.2" stroke-linecap="round"/>{knurl}</g>'
         "</g>"
     )
     return body, defs
@@ -132,7 +154,7 @@ def card() -> str:
     b.append(text("italic", "timeless taste.", 23, P + width("sans", tag, 18, -0.01), 220, "ink"))
     b.append(text("sans", "wilsoniu.com   ·   @WilsoniuDesign", 14, P, 256, "sub"))
 
-    k, kdefs = knob(812, 166, 74)
+    k, kdefs = knob(812, 164, 66)
     b.append(k)
 
     b.append(f'<path d="M{P} 300.5H{W - P}" stroke="{RULE}"/>')

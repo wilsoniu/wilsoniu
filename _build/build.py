@@ -22,7 +22,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lib  # noqa: E402
 from lib import ACC, BG, DIM, INK, SUB, H, W  # noqa: E402
 
-SHOT_MODULES = [("s1", "s1_name"), ("s2", "s2_role"), ("s3", "s3_tagline"), ("s4", "s4_stack"), ("s5", "s5_now"), ("s6", "s6_studio")]
+SHOT_MODULES = [("s1", "s1_name"), ("s2", "s2_role"), ("s3", "s3_tagline"), ("s4", "s4_dial"), ("s5", "s5_now"),
+                ("s7", "s7_code"), ("s6", "s6_studio")]
+# Shots were composed on a 960 x 600 canvas; these recentre them in the 21:9 band (px down).
+OFFSETS = {"s1": 18, "s5": 26, "s6": 24}
+# Shots are authored on a 12 s clock; these move them onto the 13.5 s published loop.
+WARPS = {
+    "s1": lambda t: t + 1.5 if t >= 6 else t,   # the pre-wrap build moves with the loop end
+    "s5": lambda t: t - 0.5,                     # 8.0-9.5  -> 7.5-9.0
+    "s6": lambda t: t + 1.5,                     # 9.5-11.3 -> 11.0-12.8
+}
+
+
+VY, VH = lib.VIEW_Y, lib.VIEW_H
 
 
 def compose(keys: list[str]) -> str:
@@ -35,7 +47,10 @@ def compose(keys: list[str]) -> str:
         except ModuleNotFoundError:
             print(f"  (skipping {key}: shots/{module}.py not written yet)")
             continue
-        shots.append(f'<g id="{key}">{mod.build()}</g>')
+        lib.WARP = WARPS.get(key)
+        dy = OFFSETS.get(key, 0)
+        shots.append(f'<g id="{key}"' + (f' transform="translate(0 {dy})"' if dy else "") + f'>{mod.build()}</g>')
+        lib.WARP = None
 
     css = f"""
 .ink{{fill:{INK}}}.sub{{fill:{SUB}}}.dim{{fill:{DIM}}}.acc{{fill:{ACC}}}.name{{fill:url(#name)}}
@@ -43,7 +58,7 @@ def compose(keys: list[str]) -> str:
 
     defs = [
         *(f'<path id="{gid}" d="{d}"/>' for gid, d in lib.GLYPHS.values() if d),
-        f'<clipPath id="frame"><rect width="{W}" height="{H}" rx="18"/></clipPath>',
+        f'<clipPath id="frame"><rect y="{VY}" width="{W}" height="{VH}" rx="18"/></clipPath>',
         # satin metal: a soft top light rolling into brushed grey, no mirror-chrome band
         '<linearGradient id="name" gradientUnits="userSpaceOnUse" x1="0" y1="780" x2="0" y2="-80">'
         '<stop offset="0" stop-color="#FCFCFD"/><stop offset=".42" stop-color="#E2E4E8"/><stop offset=".62" stop-color="#BDC1C8"/>'
@@ -51,15 +66,15 @@ def compose(keys: list[str]) -> str:
         *lib.DEFS,
     ]
     return "\n".join([
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" '
-        f'aria-label="wilsoniu — experience designer at CYTE LAB. A 12-second motion reel.">',
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{VH}" viewBox="0 {VY} {W} {VH}" role="img" '
+        f'aria-label="wilsoniu — experience designer at CYTE. A 13.5-second motion reel.">',
         "<title>wilsoniu — reel</title>",
         f"<style>{css}</style>",
         f"<defs>{''.join(defs)}</defs>",
         '<g clip-path="url(#frame)">',
         f'<rect width="{W}" height="{H}" fill="{BG}"/>',
         *shots,
-        f'<rect x=".5" y=".5" width="{W - 1}" height="{H - 1}" rx="17.5" fill="none" stroke="#fff" stroke-opacity=".08"/>',
+        f'<rect x=".5" y="{VY + 0.5}" width="{W - 1}" height="{VH - 1}" rx="17.5" fill="none" stroke="#fff" stroke-opacity=".08"/>',
         "</g>",
         "</svg>",
     ])

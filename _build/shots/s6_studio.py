@@ -3,7 +3,7 @@ sky above the horizon and is cut together on the beat. The terrain stays below t
 band, so no line ever reaches the type.
 
     9.50  CUT into the flight: the camera is already rushing forward and pushes in.
-    9.60  The mark slams in (1.8 -> 1, overshoot); a faint horizon line shoots out from the centre.
+    9.60  The mark slams in (1.8 -> 1, overshoot); the valley keeps flying beneath it.
     9.75  "CYTE LAB" rises letter by letter through a slot.
     9.875 "CREATIVE TECH STUDIO" types on behind an accent cursor.
    10.00  The three focus words hit on 8ths (10.00, 10.25, 10.50), each rising through a slot,
@@ -68,11 +68,6 @@ def world() -> str:
     land = lib.terrain(prefix=f"{K}t", period=2.0, hor=HOR, rows=26, cols=21)
     # depth haze on the horizon rides with the camera (wider than the frame so the roll never shows its ends)
     land += f'<rect x="-120" y="{HOR - 60}" width="{W + 240}" height="120" fill="url(#{K}-haze)"/>'
-    # the horizon line: shoots out from the vanishing point on the slam, then rests low
-    line = f'<path d="M{CX - 480} {HOR}.5H{CX + 480}" stroke="{INK}" stroke-opacity=".35" stroke-width="1"/>'
-    land += kf([(9.6, shown("opacity:1;transform:scaleX(0)"), EXPO), (9.9, shown("opacity:1;transform:scaleX(1)"), SINE),
-                (10.4, shown("opacity:.4;transform:scaleX(1)")), (T1 - E, shown("opacity:.4;transform:scaleX(1)"))],
-               f"{CX}px {HOR}px", line)
     o = f"{CX}px {HOR}px"
     # the camera: already flying on the cut, a push that steps forward on each focus hit,
     # then an accelerating dive into the valley for the exit

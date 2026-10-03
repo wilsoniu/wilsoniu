@@ -7,7 +7,7 @@
                                        which punches in, word by word, up in the sky; anamorphic
                                        bars slam in to 2.39:1.
   C  4.83-5.50  "timeless taste."      serif italic tracks in toward the centre on a fast push; a
-                                       hairline horizon snaps out from the centre well below it.
+                                       type stands alone, pushing in.
 
 Every sub-shot is cut into motion (its first frame is already moving) and keeps moving
 until the next cut. No captions, no counters: type, a hairline or terrain, nothing else.
@@ -128,11 +128,8 @@ def shot_b() -> str:
 
 def shot_c() -> str:
     # Instrument Serif italic @132: 98 px above the baseline, 1.3 below. Push 1.08 about y 300 puts
-    # the lowest glyph pixel at 345; the horizon sits at 396, 51 px clear.
-    size, base, hor = 132, 340, 396
-    line = anim(f'<path d="M{lib.X0} {hor + 0.5}H{lib.X1}" stroke="{INK}" stroke-opacity=".5" stroke-width="1" fill="none"/>',
-                [(0, "transform:scaleX(.04)"), (C0 - 0.04, "transform:scaleX(.04)", EXPO), (C0 + 0.36, "transform:none"), (T, "transform:none")],
-                origin=f"480px {hor}px")
+    # the lowest glyph pixel at 345. No horizon line: the type stands alone.
+    size, base = 132, 340
 
     # letters track in toward the centre (EXPO); a quick opacity ramp rides the first part of the move
     lay = letters("italic", TAG_C, size, W / 2, base, 0, "middle")
@@ -148,8 +145,7 @@ def shot_c() -> str:
                   (t0 + 0.5, "transform:none"), (T, "transform:none")], delay=lag)
         glyphs.append(anim(g, [(0, "opacity:0"), (t0, "opacity:0", SINE), (t0 + 0.12, "opacity:1"), (T, "opacity:1")], delay=lag))
     words = drift("".join(glyphs), C0, C1, "transform:scale(1)", "transform:scale(1.08)", origin=f"480px {base - 40}px")
-    scene = drift(line, C0, C1, "transform:scale(1)", "transform:scale(1.04)", origin=f"480px {hor}px")
-    return scene + words
+    return words
 
 
 TAG_A, TAG_B, TAG_C = lib.TAGLINE
